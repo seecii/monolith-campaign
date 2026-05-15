@@ -1,4 +1,4 @@
-Live site: https://vercel.com/seeonks-projects/monolith-campaign
+Live site: https://monolith-campaign.vercel.app/
 
 Build as a single HTML artifact with all CSS and JS inline. Use vanilla JavaScript only, 
 no frameworks. Optimize scroll calculations with requestAnimationFrame.
