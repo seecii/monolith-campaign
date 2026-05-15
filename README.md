@@ -52,13 +52,13 @@ Brand:
 - Color: Matte Black
 
 Model images (4 transparent-background PNGs, all front-facing same framing):
-- [PASTE FACE 01 URL] — young East Asian woman, black bob
-- [PASTE FACE 02 URL] — Black man, shaved head, gray stubble
-- [PASTE FACE 03 URL] — older white woman, silver hair pulled back
-- [PASTE FACE 04 URL] — young white man, curly brown hair
+- [assets/face-01] — young East Asian woman, black bob
+- [assets/face-02] — Black man, shaved head, gray stubble
+- [assets/face-03] — older white woman, silver hair pulled back
+- [assets/face-04] — young white man, curly brown hair
 
 Sunglasses hero image:
-- [PASTE SUNGLASSES URL]
+- [assets/sunglasses-hero]
 
 Copy blocks:
 1. Hero: "One frame. From dawn to dusk."
