@@ -1,6 +1,4 @@
-This is for a design school assignment exercising 3-step prompting 
-methodology (Planning, UX, Visual Direction). Build as a single 
-HTML artifact with all CSS and JS inline. Use vanilla JavaScript only, 
+Build as a single HTML artifact with all CSS and JS inline. Use vanilla JavaScript only, 
 no frameworks. Optimize scroll calculations with requestAnimationFrame.
 
 Build me a single-page sunglasses campaign website using only HTML, JS, 
