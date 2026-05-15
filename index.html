@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MONOLITH 01 — SS26 Campaign</title>
+  <meta name="description" content="MONOLITH 01. One frame. From dusk to dawn. SS26 campaign — a single sunglass, every face, every light.">
+  <meta property="og:title" content="MONOLITH 01 — SS26 Campaign">
+  <meta property="og:description" content="One frame. From dusk to dawn.">
+  <meta property="og:image" content="./assets/face-01.png">
+  <meta name="theme-color" content="#1a1a18">
+
+  <link rel="preload" as="image" href="./assets/face-01.png">
+  <link rel="preload" as="image" href="./assets/face-02.png">
+  <link rel="preload" as="image" href="./assets/face-03.png">
+  <link rel="preload" as="image" href="./assets/face-04.png">
+  <link rel="preload" as="image" href="./assets/sunglasses-hero.png">
+  <link rel="preload" as="image" href="./assets/sunglasses-side.png">
+  <link rel="preload" as="image" href="./assets/sunglasses-dust.png">
+  <link rel="preload" as="image" href="./assets/sunglasses-snow.png">
+  <link rel="preload" as="image" href="./assets/sunglasses-water.png">
+  <link rel="preload" href="./assets/sunglasses.glb" as="fetch" type="model/gltf-binary" crossorigin>
+
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;700&family=Geist+Mono:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-color: #1a1a18;
+      --text-color: #f5f5f3;
+      --rule: rgba(245, 245, 243, 0.18);
+      --dark-bg: #1a1a18;
+      --dark-fg: #f5f5f3;
+      --dark-rule: rgba(245, 245, 243, 0.18);
+      --ease: cubic-bezier(0.4, 0, 0.2, 1);
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+    }
+    html::-webkit-scrollbar { display: none; }
+
+    body {
+      font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-weight: 400;
+      font-size: 16px;
+      line-height: 1.5;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      overflow-x: hidden;
+    }
+
+    img { display: block; max-width: 100%; }
+
+    /* ---------- FIXED CHROME ---------- */
+    .chrome {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      padding: clamp(20px, 3vw, 32px) clamp(24px, 4vw, 64px);
+      color: var(--text-color);
+      pointer-events: none;
+      mix-blend-mode: normal;
+    }
+    .brand {
+      font-family: 'Geist Mono', 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    .meta-center {
+      font-family: 'Geist Mono', 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      opacity: 0.6;
+      text-align: center;
+    }
+    .timestamp {
+      font-family: 'Geist Mono', 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.06em;
+      text-align: right;
+    }
+
+    /* ---------- HERO ---------- */
+    .hero {
+      position: relative;
+      height: 100vh;
+      width: 100%;
+      display: grid;
+      grid-template-rows: 1fr auto;
+      align-items: center;
+      justify-items: center;
+      padding: 0 clamp(24px, 4vw, 64px);
+      overflow: hidden;
+    }
+    .hero-face-wrap {
+      display: grid;
+      place-items: center;
+      width: 100%;
+      height: 100%;
+    }
+    .hero-model {
+      position: absolute;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: transparent;
+      --poster-color: transparent;
+      --progress-bar-color: rgba(245, 245, 243, 0.35);
+      --progress-mask: transparent;
+      pointer-events: auto;
+      will-change: opacity;
+      cursor: grab;
+      z-index: 1;
+    }
+    .hero-model:active { cursor: grabbing; }
+    /* Once the CAD cursor JS is wired up, hide the system cursor over the model. */
+    body.cad-bound .hero-model,
+    body.cad-bound .hero-model:active { cursor: none; }
+
+    /* ---------- CAD CROSSHAIR CURSOR ---------- */
+    #cad-cursor {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 9999;
+      pointer-events: none;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 200ms var(--ease-out);
+      will-change: transform, opacity;
+      font-family: 'Geist Mono', 'JetBrains Mono', monospace;
+    }
+    #cad-cursor.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+    .cad-crosshair {
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      shape-rendering: crispEdges;
+    }
+    .cad-readout {
+      position: absolute;
+      top: 0;
+      left: 48px; /* 32px crosshair + 16px gap */
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.05em;
+      line-height: 1.3;
+      color: #f5f5f3;
+      font-variant-numeric: tabular-nums;
+      text-transform: uppercase;
+      white-space: pre;
+    }
+    @media (hover: none), (pointer: coarse) {
+      #cad-cursor { display: none !important; }
+    }
+    .hero-tagline {
+      position: absolute;
+      bottom: clamp(56px, 9vh, 110px);
+      left: clamp(24px, 4vw, 64px);
+      font-size: clamp(3rem, 8vw, 6.5rem);
+      font-weight: 500;
+      line-height: 0.95;
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+      color: var(--text-color);
+      max-width: 90vw;
+      pointer-events: none;
+      z-index: 5;
+    }
+    .hero-tagline span { display: block; }
+    .scroll-indicator {
+      position: absolute;
+      bottom: clamp(36px, 5vh, 56px);
+      right: clamp(24px, 4vw, 64px);
+      font-family: 'Geist Mono', 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-color);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      pointer-events: none;
+      z-index: 5;
+    }
+    .scroll-indicator .arrow {
+      display: inline-block;
+      animation: drop 1.8s ease-in-out infinite;
+    }
+    @keyframes drop {
+      0%, 100% { transform: translateY(0); opacity: 1; }
+      50% { transform: translateY(6px); opacity: 0.4; }
+    }
+    .hero-rule {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      height: 1px;
+      background: var(--text-color);
+      opacity: 0.18;
+    }
+
+    /* ---------- FACE-SWAP ---------- */
+    .face-swap {
+      position: relative;
+      height: 1000vh;
+      width: 100%;
+    }
+    .face-swap-sticky {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      width: 100%;
+      overflow: hidden;
+    }
+    .face {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      height: 90vh;
+      width: auto;
+      max-width: 96vw;
+      object-fit: contain;
+      object-position: bottom center;
+      opacity: 0;
+      will-change: opacity;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+    .face[data-face="0"] { opacity: 1; }
+
+    .side-labels {
+      position: absolute;
+      top: 50%;
+      left: clamp(24px, 4vw, 64px);
+      transform: translateY(-50%);
+      display: grid;
+      gap: 14px;
+      z-index: 20;
+      pointer-events: none;
+    }
+    .side-label {
+      font-family: 'Geist Mono', 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--text-color);
+      opacity: 0.22;
+      transition: opacity 500ms var(--ease);
+    }
+    .side-label.active { opacity: 1; }
+
+    .mid-overlay {
+      position: absolute;
+      top: 50%;
+      right: clamp(24px, 4vw, 64px);
+      transform: translateY(-50%);
+      font-size: clamp(1.75rem, 4.2vw, 3.5rem);
+      font-weight: 500;
+      line-height: 0.98;
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+      color: #0a0a0a;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 15;
+      max-width: 36vw;
+      text-align: right;
+      will-change: opacity;
+    }
+    .mid-overlay span { display: block; }
+
+    /* ---------- SECTIONS ---------- */
+    /* Backgrounds inherited from page gradient via body's var(--bg-color) */
+    .dark {
+      position: relative;
+    }
+    .section-inner {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: clamp(80px, 12vh, 160px) clamp(24px, 4vw, 64px);
+      position: relative;
+    }
+    .section-label {
+      font-family: 'Geist Mono', 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      opacity: 0.5;
+      margin-bottom: clamp(56px, 10vh, 120px);
+      display: block;
+    }
+
+    /* ---------- PHILOSOPHY ---------- */
+    .philosophy .headline {
+      font-size: clamp(1.75rem, 4.2vw, 3.25rem);
+      font-weight: 500;
+      line-height: 1.15;
+      letter-spacing: -0.015em;
+      text-transform: uppercase;
+      max-width: 26ch;
+      padding: clamp(40px, 6vh, 80px) 0;
+      border-top: 1px solid var(--rule);
+      border-bottom: 1px solid var(--rule);
+    }
+
+    /* ---------- MATERIALS ---------- */
+    .materials-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(40px, 6vw, 96px);
+      align-items: start;
+    }
+    /* ---------- MATERIALS SLIDER ---------- */
+    .slider {
+      width: 100%;
+      max-width: 560px;
+      display: grid;
+      gap: 18px;
+      outline: none;
+    }
+    .slider-frame {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      overflow: hidden;
+    }
+    .slider-stack {
+      position: absolute;
+      inset: 0;
+    }
+    .slide {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      opacity: 0;
+      transition: opacity 400ms var(--ease-out);
+      user-select: none;
+      -webkit-user-drag: none;
+      will-change: opacity;
+    }
+    .slide.active {
+      opacity: 1;
+    }
+    .slider-counter {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      font-family: 'Geist Mono', 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      opacity: 0.3;
+      font-variant-numeric: tabular-nums;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .slider-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      font-family: 'Geist Mono', 'JetBrains Mono', monospace;
+      font-size: 14px;
+      color: inherit;
+      background: transparent;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      opacity: 0.7;
+      transition: opacity 180ms ease-out;
+      z-index: 2;
+    }
+    .slider-nav:hover,
+    .slider-nav:focus-visible { opacity: 1; outline: none; }
+    .slider-nav:disabled { opacity: 0.25; cursor: default; }
+    .slider-nav.prev { left: 6px; }
+    .slider-nav.next { right: 6px; }
+    .slider-label {
+      font-family: 'Geist Mono', 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-align: center;
+      opacity: 0.7;
+      transition: opacity 200ms ease-out;
+      min-height: 1.2em;
+    }
+    .slider-label.transitioning { opacity: 0; }
+    .slider-dots {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .slider-dot {
+      width: 24px;
+      height: 1px;
+      background: currentColor;
+      border: none;
+      padding: 0;
+      margin: 11px 0;
+      opacity: 0.3;
+      cursor: pointer;
+      transition: opacity 200ms ease-out;
+      position: relative;
+    }
+    /* Larger invisible tap target around the 1px bar */
+    .slider-dot::after {
+      content: '';
+      position: absolute;
+      top: -11px; left: 0; right: 0; bottom: -11px;
+    }
+    .slider-dot.active { opacity: 1; }
+    .slider-dot:hover:not(.active) { opacity: 0.7; }
+    .slider-dot:focus-visible { outline: 1px dashed currentColor; outline-offset: 4px; }
+    .specs { display: grid; }
+    .spec-row {
+      display: grid;
+      grid-template-columns: 100px 1fr;
+      gap: 32px;
+      padding: 24px 0;
+      border-bottom: 1px solid var(--rule);
+      align-items: baseline;
+    }
+    .spec-row:first-of-type {
+      border-top: 1px solid var(--rule);
+    }
+    .spec-label {
+      font-family: 'Geist Mono', 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      opacity: 0.55;
+    }
+    .spec-desc {
+      font-size: 15px;
+      line-height: 1.45;
+      letter-spacing: -0.003em;
+    }
+
+    /* ---------- CTA ---------- */
+    .cta {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+    .cta-inner {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: clamp(80px, 12vh, 160px) clamp(24px, 4vw, 64px) clamp(40px, 6vh, 80px);
+      width: 100%;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: clamp(40px, 6vh, 80px);
+    }
+    .cta-center {
+      display: grid;
+      justify-items: center;
+      align-content: center;
+      text-align: center;
+      gap: 20px;
+    }
+    .cta-title {
+      font-size: clamp(4rem, 10vw, 8rem);
+      font-weight: 500;
+      letter-spacing: -0.03em;
+      line-height: 0.92;
+      text-transform: uppercase;
+    }
+    .cta-price {
+      font-family: 'Geist Mono', 'JetBrains Mono', monospace;
+      font-size: 14px;
+      font-weight: 400;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      opacity: 0.65;
+    }
+    .cta-button {
+      font-family: 'Geist Mono', 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      padding: 18px 28px;
+      border: 1px solid var(--text-color);
+      background: transparent;
+      color: var(--text-color);
+      cursor: pointer;
+      margin-top: 16px;
+      transition: background 220ms ease-out, color 220ms ease-out, border-color 220ms ease-out;
+    }
+    .cta-button:hover, .cta-button:focus-visible {
+      background: var(--text-color);
+      color: var(--bg-color);
+      outline: none;
+    }
+    .cta-microcopy {
+      font-family: 'Geist Mono', 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      text-align: center;
+      opacity: 0.45;
+    }
+
+    /* ---------- FOOTER ---------- */
+    footer {
+      color: var(--text-color);
+      border-top: 1px solid var(--rule);
+    }
+    .footer-inner {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 40px clamp(24px, 4vw, 64px);
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 24px;
+      font-family: 'Geist Mono', 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    .footer-left { opacity: 0.6; }
+    .footer-nav { display: flex; gap: 28px; }
+    .footer-nav a {
+      color: inherit;
+      text-decoration: none;
+      opacity: 0.85;
+      transition: opacity 180ms ease-out;
+    }
+    .footer-nav a:hover { opacity: 1; }
+    .footer-right { text-align: right; opacity: 0.6; }
+
+    /* ---------- ENTRY ANIMATIONS ---------- */
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 800ms var(--ease-out), transform 800ms var(--ease-out);
+    }
+    .reveal.in {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ---------- RESPONSIVE ---------- */
+    @media (max-width: 1023px) {
+      .hero-model { height: 60vh; }
+      .face { height: 85vh; }
+      .mid-overlay {
+        font-size: clamp(1.5rem, 4vw, 2.5rem);
+        max-width: 44vw;
+      }
+    }
+    @media (max-width: 899px) {
+      .materials-grid { grid-template-columns: 1fr; gap: 48px; }
+      .materials-image-wrap { padding: 0; }
+    }
+    @media (max-width: 767px) {
+      .hero-model { height: 50vh; width: min(560px, 96vw); }
+      .face { height: 78vh; }
+      .hero-tagline { font-size: clamp(2.25rem, 11vw, 4rem); }
+      .meta-center { display: none; }
+      .side-labels { display: none; }
+      .mid-overlay {
+        left: 24px;
+        right: 24px;
+        max-width: none;
+        text-align: left;
+        font-size: clamp(1.4rem, 6.5vw, 2.25rem);
+      }
+      .spec-row { grid-template-columns: 80px 1fr; gap: 16px; padding: 18px 0; }
+      .spec-desc { font-size: 14px; }
+      .footer-inner { grid-template-columns: 1fr; gap: 18px; text-align: left; }
+      .footer-right { text-align: left; }
+      .footer-nav { flex-wrap: wrap; gap: 18px; }
+      .cta-title { font-size: clamp(2.75rem, 14vw, 5rem); }
+      .cta-button { padding: 16px 22px; font-size: 11px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .scroll-indicator .arrow { animation: none; }
+      .reveal { transition-duration: 200ms; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Fixed top chrome -->
+  <header class="chrome" aria-label="Site chrome">
+    <div class="brand">MONOLITH</div>
+    <div class="meta-center">MNLTH-01 / SS26 / CAMPAIGN</div>
+    <div class="timestamp" aria-live="off">00:00:00</div>
+  </header>
+
+  <!-- 1. HERO -->
+  <section class="hero" aria-label="Hero">
+    <div class="hero-face-wrap">
+      <model-viewer class="hero-model"
+        src="./assets/sunglasses.glb"
+        alt="MONOLITH 01 sunglasses — rotating 3D product view"
+        auto-rotate
+        auto-rotate-delay="0"
+        rotation-per-second="6deg"
+        camera-controls
+        disable-zoom
+        interaction-prompt="none"
+        shadow-intensity="0"
+        exposure="1.1"
+        environment-image="neutral"
+        camera-orbit="0deg 90deg 15m"
+        field-of-view="20deg"
+        loading="eager"></model-viewer>
+      <div id="cad-cursor" aria-hidden="true">
+        <svg class="cad-crosshair" width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <line x1="16" y1="0"  x2="16" y2="12" stroke="#f5f5f3" stroke-width="1"/>
+          <line x1="16" y1="20" x2="16" y2="32" stroke="#f5f5f3" stroke-width="1"/>
+          <line x1="0"  y1="16" x2="12" y2="16" stroke="#f5f5f3" stroke-width="1"/>
+          <line x1="20" y1="16" x2="32" y2="16" stroke="#f5f5f3" stroke-width="1"/>
+          <rect x="15.5" y="15.5" width="1" height="1" fill="#f5f5f3"/>
+        </svg>
+        <div class="cad-readout">
+          <div>X:   <span data-cad="x">0000</span></div>
+          <div>Y:   <span data-cad="y">0000</span></div>
+          <div>ROT: <span data-cad="rot">000</span>°</div>
+        </div>
+      </div>
+    </div>
+    <h1 class="hero-tagline">
+      <span>One frame.</span>
+      <span>From dusk to dawn.</span>
+    </h1>
+    <div class="scroll-indicator" aria-hidden="true">
+      <span>Scroll</span>
+      <span class="arrow">↓</span>
+    </div>
+    <div class="hero-rule" aria-hidden="true"></div>
+  </section>
+
+  <!-- 2. FACE-SWAP -->
+  <section class="face-swap" aria-label="Faces, light, time — the frame remains">
+    <div class="face-swap-sticky">
+      <img class="face" data-face="0"
+           src="./assets/face-01.png"
+           alt="Young East Asian woman with black bob, dawn light, wearing MONOLITH 01 sunglasses."
+           draggable="false">
+      <img class="face" data-face="1"
+           src="./assets/face-02.png"
+           alt="Black man with shaved head and gray stubble, morning light, wearing MONOLITH 01 sunglasses."
+           draggable="false">
+      <img class="face" data-face="2"
+           src="./assets/face-03.png"
+           alt="Older white woman with silver hair pulled back, dusk light, wearing MONOLITH 01 sunglasses."
+           draggable="false">
+      <img class="face" data-face="3"
+           src="./assets/face-04.png"
+           alt="Young white man with curly brown hair, night light, wearing MONOLITH 01 sunglasses."
+           draggable="false">
+
+      <aside class="side-labels" aria-hidden="true">
+        <div class="side-label active" data-stage="0">Night</div>
+        <div class="side-label" data-stage="1">Twilight</div>
+        <div class="side-label" data-stage="2">Daybreak</div>
+        <div class="side-label" data-stage="3">Dawn</div>
+      </aside>
+
+      <div class="mid-overlay" aria-hidden="true">
+        <span>Faces change.</span>
+        <span>Light changes.</span>
+        <span>The frame doesn't.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. PHILOSOPHY -->
+  <section class="dark philosophy" aria-label="Philosophy">
+    <div class="section-inner">
+      <span class="section-label">02 / Philosophy</span>
+      <p class="headline reveal">
+        We made one pair of sunglasses. We think that's enough. Built for every face, every light, every moment between the first coffee and the last drink of the night.
+      </p>
+    </div>
+  </section>
+
+  <!-- 4. MATERIALS -->
+  <section class="dark materials" aria-label="Specifications">
+    <div class="section-inner">
+      <span class="section-label">03 / Specifications</span>
+      <div class="materials-grid">
+        <div class="slider reveal" tabindex="0" aria-roledescription="carousel" aria-label="MONOLITH 01 product views">
+          <div class="slider-frame">
+            <div class="slider-stack">
+              <img class="slide active" data-slide="0"
+                   src="./assets/sunglasses-hero.png"
+                   alt="MONOLITH 01 sunglasses — front view, isolated." draggable="false">
+              <img class="slide" data-slide="1"
+                   src="./assets/sunglasses-side.png"
+                   alt="MONOLITH 01 sunglasses — side profile." draggable="false">
+              <img class="slide" data-slide="2"
+                   src="./assets/sunglasses-dust.png"
+                   alt="MONOLITH 01 sunglasses — set in a dusty environment." draggable="false">
+              <img class="slide" data-slide="3"
+                   src="./assets/sunglasses-snow.png"
+                   alt="MONOLITH 01 sunglasses — set in snow." draggable="false">
+              <img class="slide" data-slide="4"
+                   src="./assets/sunglasses-water.png"
+                   alt="MONOLITH 01 sunglasses — in water." draggable="false">
+            </div>
+            <div class="slider-counter" aria-hidden="true">01 / 05</div>
+            <button class="slider-nav prev" type="button" aria-label="Previous view">&larr;</button>
+            <button class="slider-nav next" type="button" aria-label="Next view">&rarr;</button>
+          </div>
+          <div class="slider-label" aria-live="polite">01 / Standard</div>
+          <div class="slider-dots" role="tablist" aria-label="Choose view">
+            <button class="slider-dot active" type="button" role="tab" data-slide="0" aria-label="View 1: Standard" aria-selected="true"></button>
+            <button class="slider-dot" type="button" role="tab" data-slide="1" aria-label="View 2: Profile" aria-selected="false"></button>
+            <button class="slider-dot" type="button" role="tab" data-slide="2" aria-label="View 3: Dust" aria-selected="false"></button>
+            <button class="slider-dot" type="button" role="tab" data-slide="3" aria-label="View 4: Snow" aria-selected="false"></button>
+            <button class="slider-dot" type="button" role="tab" data-slide="4" aria-label="View 5: Water" aria-selected="false"></button>
+          </div>
+        </div>
+        <div class="specs reveal">
+          <div class="spec-row">
+            <div class="spec-label">MAT.01</div>
+            <div class="spec-desc">Hand-cut Italian acetate frame</div>
+          </div>
+          <div class="spec-row">
+            <div class="spec-label">MAT.02</div>
+            <div class="spec-desc">Polarized impact-resistant lens, 8-base curve</div>
+          </div>
+          <div class="spec-row">
+            <div class="spec-label">MAT.03</div>
+            <div class="spec-desc">72-hour heat-cure finishing</div>
+          </div>
+          <div class="spec-row">
+            <div class="spec-label">MAT.04</div>
+            <div class="spec-desc">Assembled by hand, Cadore, Italy</div>
+          </div>
+          <div class="spec-row">
+            <div class="spec-label">DIM.01</div>
+            <div class="spec-desc">Lens 62mm × Bridge 14mm × Temple 128mm</div>
+          </div>
+          <div class="spec-row">
+            <div class="spec-label">WGT.01</div>
+            <div class="spec-desc">24g</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. CTA -->
+  <section class="dark cta" aria-label="Acquire">
+    <div class="cta-inner">
+      <span class="section-label">04 / Acquire</span>
+      <div class="cta-center reveal">
+        <h2 class="cta-title">MONOLITH 01</h2>
+        <div class="cta-price">$280 USD</div>
+        <button class="cta-button" type="button">[ Add to bag ]</button>
+      </div>
+      <div class="cta-microcopy">
+        Free worldwide shipping &nbsp;/&nbsp; 2-year warranty &nbsp;/&nbsp; Returns within 30 days
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. FOOTER -->
+  <footer aria-label="Site footer">
+    <div class="footer-inner">
+      <div class="footer-left">MONOLITH SS26</div>
+      <nav class="footer-nav" aria-label="Footer">
+        <a href="#">Shop</a>
+        <a href="#">Journal</a>
+        <a href="#">Stores</a>
+        <a href="#">Contact</a>
+      </nav>
+      <div class="footer-right">© Monolith 2026 / All rights reserved</div>
+    </div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+
+    // ---------- DOM refs ----------
+    const root = document.documentElement;
+    const faceSwap = document.querySelector('.face-swap');
+    const faces = Array.from(document.querySelectorAll('.face'));
+    const timestampEl = document.querySelector('.timestamp');
+    const midOverlay = document.querySelector('.mid-overlay');
+    const sideLabels = Array.from(document.querySelectorAll('.side-label'));
+    const heroModel = document.querySelector('.hero-model');
+    const cadCursor = document.getElementById('cad-cursor');
+    const cadX = cadCursor ? cadCursor.querySelector('[data-cad="x"]') : null;
+    const cadY = cadCursor ? cadCursor.querySelector('[data-cad="y"]') : null;
+    const cadRot = cadCursor ? cadCursor.querySelector('[data-cad="rot"]') : null;
+    const hoverCapable = typeof window.matchMedia === 'function'
+      && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+    // ---------- Color stops (RGB, mapped 0..1 over face-swap progress) ----------
+    // Narrative: NIGHT → DAWN. World wakes up as user scrolls.
+    const BG_STOPS = [
+      [0,     [0x1a, 0x1a, 0x18]], // night
+      [1 / 3, [0x5a, 0x5a, 0x58]], // dusk
+      [2 / 3, [0xb8, 0xb8, 0xb6]], // morning
+      [1,     [0xe8, 0xe8, 0xe6]]  // dawn
+    ];
+    // Sharper text inversion window — bg crosses mid-gray near pGlobal=0.5,
+    // so text flips fast in that band to preserve contrast on either side.
+    const TEXT_STOPS = [
+      [0,    [0xf5, 0xf5, 0xf3]], // off-white on night
+      [0.45, [0xf5, 0xf5, 0xf3]],
+      [0.55, [0x0a, 0x0a, 0x0a]],
+      [1,    [0x0a, 0x0a, 0x0a]]  // near-black on dawn
+    ];
+
+    // ---------- Math helpers ----------
+    const clamp01 = (v) => v < 0 ? 0 : (v > 1 ? 1 : v);
+    const lerp = (a, b, t) => a + (b - a) * t;
+
+    function lerpStops(stops, t) {
+      if (t <= stops[0][0]) return stops[0][1];
+      const last = stops.length - 1;
+      if (t >= stops[last][0]) return stops[last][1];
+      for (let i = 0; i < last; i++) {
+        const [t0, c0] = stops[i];
+        const [t1, c1] = stops[i + 1];
+        if (t >= t0 && t <= t1) {
+          const u = (t - t0) / (t1 - t0);
+          return [
+            Math.round(lerp(c0[0], c1[0], u)),
+            Math.round(lerp(c0[1], c1[1], u)),
+            Math.round(lerp(c0[2], c1[2], u))
+          ];
+        }
+      }
+      return stops[last][1];
+    }
+    const rgbStr = (c) => 'rgb(' + c[0] + ',' + c[1] + ',' + c[2] + ')';
+
+    // ---------- Per-face overlapping fade windows ----------
+    // Rhythm: HOLD → FADE → HOLD → FADE → HOLD → FADE → HOLD
+    // Each entry: [fadeInStart, fadeInEnd, fadeOutStart, fadeOutEnd]
+    // -Infinity for "already visible at start", +Infinity for "stays visible to end"
+    const FACE_WINDOWS = [
+      [-Infinity, -Infinity, 0.18, 0.28], // face-01: hold 0–18%, fade out 18→28
+      [0.18, 0.28, 0.45, 0.58],           // face-02: fade in 18→28, hold 28–45, fade out 45→58
+      [0.45, 0.58, 0.75, 0.88],           // face-03: fade in 45→58, hold 58–75, fade out 75→88
+      [0.75, 0.88, Infinity, Infinity]    // face-04: fade in 75→88, hold 88–100
+    ];
+
+    function faceOpacityFor(idx, p) {
+      const w = FACE_WINDOWS[idx];
+      let inOp;
+      if (p <= w[0]) inOp = 0;
+      else if (p >= w[1]) inOp = 1;
+      else inOp = (p - w[0]) / (w[1] - w[0]);
+      let outOp;
+      if (p <= w[2]) outOp = 1;
+      else if (p >= w[3]) outOp = 0;
+      else outOp = 1 - (p - w[2]) / (w[3] - w[2]);
+      return inOp * outOp;
+    }
+
+    // ---------- Mid-overlay envelope ----------
+    // Fades in during face-02→face-03 transition (45–55%),
+    // sustains through face-03 hold + face-03→face-04 + face-04 hold (55–95%),
+    // ease-out exit at very end of face-swap (95–100%).
+    const MID_PEAK = 0.85;
+    function midOpacityFor(p) {
+      if (p < 0.45) return 0;
+      if (p < 0.55) return ((p - 0.45) / 0.10) * MID_PEAK;
+      if (p < 0.95) return MID_PEAK;
+      if (p < 1.00) {
+        const t = (p - 0.95) / 0.05;
+        return MID_PEAK * Math.pow(1 - t, 3); // ease-out exit
+      }
+      return 0;
+    }
+
+    // ---------- Timestamp: linear 0s (00:00) → 21600s (06:00). World waking up. ----------
+    function formatTime(p) {
+      const total = Math.floor(lerp(0, 21600, p));
+      const norm = total % 86400;
+      const h = Math.floor(norm / 3600);
+      const m = Math.floor((norm % 3600) / 60);
+      const s = norm % 60;
+      const pad = (n) => (n < 10 ? '0' + n : '' + n);
+      return pad(h) + ':' + pad(m) + ':' + pad(s);
+    }
+
+    // ---------- Cached layout values ----------
+    let secTop = 0;
+    let secRange = 1;
+    let vh = 0;
+    let docRange = 1;
+    function cacheLayout() {
+      // Face-swap sticky pin range (drives faces, timestamp, mid-overlay, side labels)
+      secTop = faceSwap.offsetTop;
+      secRange = Math.max(1, faceSwap.offsetHeight - window.innerHeight);
+      vh = window.innerHeight;
+      // Global scroll range (drives bg + text gradient across the entire page)
+      docRange = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+    }
+
+    // ---------- Last-known scroll, applied via rAF tick ----------
+    let lastScrollY = 0;
+    let lastTime = '';
+    let lastActiveStage = -1;
+    let lastMidOp = -1;
+    let lastModelOp = -1;
+    let ticking = false;
+
+    // ---------- CAD cursor state ----------
+    let cadActive = false;    // mouse currently over the model-viewer
+    let cadRafId = 0;         // rAF id for continuous ROT polling
+    let lastCadVisible = false;
+
+    function apply() {
+      ticking = false;
+      // pFace: section-local progress (faces, timestamp, mid-overlay, side labels)
+      const p = clamp01((lastScrollY - secTop) / secRange);
+      // pGlobal: page-wide progress (bg + text gradient extends past face-swap)
+      const pGlobal = clamp01(lastScrollY / docRange);
+
+      // Hero 3D model fade-out: 1 at scrollY=0, 0 at scrollY = 80% of viewport
+      if (heroModel) {
+        const mOp = clamp01(1 - lastScrollY / (vh * 0.8));
+        if (Math.abs(mOp - lastModelOp) > 0.005) {
+          heroModel.style.opacity = mOp;
+          heroModel.style.pointerEvents = mOp < 0.01 ? 'none' : 'auto';
+          lastModelOp = mOp;
+        }
+      }
+
+      // CAD crosshair visibility — show only when mouse is over the model AND we're still in the hero (<80vh).
+      if (cadCursor && hoverCapable) {
+        const shouldShow = cadActive && lastScrollY < vh * 0.8;
+        if (shouldShow !== lastCadVisible) {
+          cadCursor.classList.toggle('visible', shouldShow);
+          lastCadVisible = shouldShow;
+        }
+      }
+
+      // Background + text + rule — driven by GLOBAL scroll, not face-swap local
+      const bg = lerpStops(BG_STOPS, pGlobal);
+      const tx = lerpStops(TEXT_STOPS, pGlobal);
+      root.style.setProperty('--bg-color', rgbStr(bg));
+      root.style.setProperty('--text-color', rgbStr(tx));
+      root.style.setProperty('--rule', 'rgba(' + tx[0] + ',' + tx[1] + ',' + tx[2] + ',0.18)');
+
+      // Face opacities
+      for (let i = 0; i < faces.length; i++) {
+        faces[i].style.opacity = faceOpacityFor(i, p);
+      }
+
+      // Timestamp (only write to DOM if changed)
+      const t = formatTime(p);
+      if (t !== lastTime) {
+        timestampEl.textContent = t;
+        lastTime = t;
+      }
+
+      // Mid-overlay opacity (skip writes for unchanged values)
+      const mo = midOpacityFor(p);
+      if (Math.abs(mo - lastMidOp) > 0.005) {
+        midOverlay.style.opacity = mo;
+        lastMidOp = mo;
+      }
+
+      // Side label stage — aligned to hold windows
+      // NIGHT 0–28%, TWILIGHT 28–58%, DAYBREAK 58–88%, DAWN 88–100%
+      let stage;
+      if (p < 0.28) stage = 0;
+      else if (p < 0.58) stage = 1;
+      else if (p < 0.88) stage = 2;
+      else stage = 3;
+      if (stage !== lastActiveStage) {
+        for (let i = 0; i < sideLabels.length; i++) {
+          sideLabels[i].classList.toggle('active', i === stage);
+        }
+        lastActiveStage = stage;
+      }
+    }
+
+    function onScroll() {
+      lastScrollY = window.scrollY || window.pageYOffset;
+      if (!ticking) {
+        requestAnimationFrame(apply);
+        ticking = true;
+      }
+    }
+
+    function onResize() {
+      cacheLayout();
+      lastScrollY = window.scrollY || window.pageYOffset;
+      if (!ticking) {
+        requestAnimationFrame(apply);
+        ticking = true;
+      }
+    }
+
+    // ---------- Preload images, then bind ----------
+    const SRC = [
+      './assets/face-01.png',
+      './assets/face-02.png',
+      './assets/face-03.png',
+      './assets/face-04.png',
+      './assets/sunglasses-hero.png'
+    ];
+    let loaded = 0;
+    function done() {
+      loaded++;
+      if (loaded < SRC.length) return;
+      cacheLayout();
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onResize, { passive: true });
+      // Initial paint
+      lastScrollY = window.scrollY || window.pageYOffset;
+      apply();
+    }
+    SRC.forEach((src) => {
+      const img = new Image();
+      img.onload = done;
+      img.onerror = done;
+      img.src = src;
+    });
+
+    // ---------- CAD crosshair cursor (hover-capable devices only) ----------
+    function cadTick() {
+      if (!cadActive) { cadRafId = 0; return; }
+      if (heroModel && typeof heroModel.getCameraOrbit === 'function' && cadRot) {
+        try {
+          const orbit = heroModel.getCameraOrbit();
+          if (orbit && typeof orbit.theta === 'number') {
+            let deg = Math.round((orbit.theta * 180) / Math.PI);
+            deg = ((deg % 360) + 360) % 360;
+            cadRot.textContent = String(deg).padStart(3, '0');
+          }
+        } catch (_) { /* model not loaded yet */ }
+      }
+      cadRafId = requestAnimationFrame(cadTick);
+    }
+
+    if (cadCursor && heroModel && hoverCapable) {
+      document.body.classList.add('cad-bound');
+
+      heroModel.addEventListener('mouseenter', () => {
+        cadActive = true;
+        // sync visibility immediately, don't wait for next scroll tick
+        const shouldShow = lastScrollY < vh * 0.8;
+        cadCursor.classList.toggle('visible', shouldShow);
+        lastCadVisible = shouldShow;
+        if (!cadRafId) cadRafId = requestAnimationFrame(cadTick);
+      });
+
+      heroModel.addEventListener('mouseleave', () => {
+        cadActive = false;
+        cadCursor.classList.remove('visible');
+        lastCadVisible = false;
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (!cadActive) return;
+        // Crosshair center is at SVG (16, 16), so offset by -16 to align with cursor.
+        cadCursor.style.transform = 'translate3d(' + (e.clientX - 16) + 'px,' + (e.clientY - 16) + 'px,0)';
+        const x = Math.max(0, Math.min(9999, e.clientX | 0));
+        const y = Math.max(0, Math.min(9999, e.clientY | 0));
+        if (cadX) cadX.textContent = String(x).padStart(4, '0');
+        if (cadY) cadY.textContent = String(y).padStart(4, '0');
+      }, { passive: true });
+    }
+
+    // ---------- Entry animations (non-scroll-driven) ----------
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          e.target.classList.add('in');
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -5% 0px' });
+    document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+  })();
+
+  // ---------- MATERIALS SLIDER ----------
+  (function () {
+    'use strict';
+    const slider = document.querySelector('.slider');
+    if (!slider) return;
+
+    const slides   = Array.from(slider.querySelectorAll('.slide'));
+    const dots     = Array.from(slider.querySelectorAll('.slider-dot'));
+    const counter  = slider.querySelector('.slider-counter');
+    const labelEl  = slider.querySelector('.slider-label');
+    const prevBtn  = slider.querySelector('.slider-nav.prev');
+    const nextBtn  = slider.querySelector('.slider-nav.next');
+
+    const LABELS = [
+      '01 / Standard',
+      '02 / Profile',
+      '03 / Dust',
+      '04 / Snow',
+      '05 / Water'
+    ];
+    const total = slides.length;
+    let current = 0;
+    let labelTimer = 0;
+    const pad2 = (n) => (n < 10 ? '0' + n : '' + n);
+
+    function setSlide(idx) {
+      if (idx < 0 || idx >= total || idx === current) return;
+      slides[current].classList.remove('active');
+      dots[current].classList.remove('active');
+      dots[current].setAttribute('aria-selected', 'false');
+
+      current = idx;
+
+      slides[current].classList.add('active');
+      dots[current].classList.add('active');
+      dots[current].setAttribute('aria-selected', 'true');
+      counter.textContent = pad2(current + 1) + ' / ' + pad2(total);
+
+      // Fade label out, swap text, fade back in
+      labelEl.classList.add('transitioning');
+      clearTimeout(labelTimer);
+      labelTimer = setTimeout(() => {
+        labelEl.textContent = LABELS[current];
+        labelEl.classList.remove('transitioning');
+      }, 180);
+
+      prevBtn.disabled = current === 0;
+      nextBtn.disabled = current === total - 1;
+    }
+
+    prevBtn.addEventListener('click', () => setSlide(current - 1));
+    nextBtn.addEventListener('click', () => setSlide(current + 1));
+    dots.forEach((dot, i) => {
+      dot.addEventListener('click', () => setSlide(i));
+    });
+
+    // Keyboard support — active when slider is hovered OR focused
+    let isHovering = false;
+    let isFocused = false;
+    slider.addEventListener('mouseenter', () => { isHovering = true; });
+    slider.addEventListener('mouseleave', () => { isHovering = false; });
+    slider.addEventListener('focusin',    () => { isFocused = true; });
+    slider.addEventListener('focusout',   () => { isFocused = false; });
+
+    document.addEventListener('keydown', (e) => {
+      if (!isHovering && !isFocused) return;
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        setSlide(current - 1);
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        setSlide(current + 1);
+      }
+    });
+
+    // Initial disabled state
+    prevBtn.disabled = true;
+    nextBtn.disabled = total <= 1;
+  })();
+  </script>
+</body>
+</html>
